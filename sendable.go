@@ -166,6 +166,46 @@ func (v *Video) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 	return msg, nil
 }
 
+func (a *Animation) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error){
+	params := map[string]string {
+		"chat_id":   to.Recipient(),
+		"caption":   a.Caption,
+		"file_name": a.FileName,
+	}
+
+	if a.Duration != 0 {
+		params["duration"] = strconv.Itoa(a.Duration)
+	}
+	if a.Width != 0 {
+		params["width"] = strconv.Itoa(a.Width)
+	}
+	if a.Height != 0 {
+		params["height"] = strconv.Itoa(a.Height)
+	}
+
+	embedSendOptions(params, opt)
+
+	msg, err := b.sendObject(&a.File, "animation", params, thumbnailToFilemap(a.Thumbnail))
+	if err != nil {
+		return nil, err
+	}
+
+	if aid := msg.Animation; aid != nil {
+		aid.File.stealRef(&a.File)
+		*a = *aid
+		a.Caption = msg.Caption
+	} else if doc := msg.Document; doc != nil {
+		// If video has no sound, Telegram can turn it into Document (GIF)
+		doc.File.stealRef(&a.File)
+
+		a.Caption = doc.Caption
+		a.MIME = doc.MIME
+		a.Thumbnail = doc.Thumbnail
+	}
+
+	return msg, nil
+}
+
 // Send delivers media through bot b to recipient.
 func (v *Voice) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 	params := map[string]string{

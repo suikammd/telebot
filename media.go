@@ -130,6 +130,25 @@ func (v *Video) MediaFile() *File {
 	return &v.File
 }
 
+// Animation object represents an animation file.
+type Animation struct {
+	File
+
+	Width  int `json:"width"`
+	Height int `json:"height"`
+
+	Duration int `json:"duration,omitempty"`
+
+	Caption           string `json:"caption,omitempty"`
+	Thumbnail         *Photo `json:"thumb,omitempty"`
+	MIME              string `json:"mime_type,omitempty"`
+	FileName          string `json:"file_name,omitempty"`
+}
+
+func (a *Animation) MediaFile() *File {
+	return &a.File
+}
+
 // Voice object represents a voice note.
 type Voice struct {
 	File
